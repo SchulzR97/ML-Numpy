@@ -22,11 +22,33 @@ class NeuralNetwork(Module):
         self.modules = modules
 
     def __call__(self, X):
+        '''
+        Forward path
+
+        Parameters
+        ----------
+        X : input to the neural network
+        :return: output of the neural network
+        '''
         Y = X
         for module in self.modules:
             Y = module(Y)
 
         return Y
+    
+    def backward(self, gradient:np.array, learning_rate:np.float64) -> np.ndarray:
+        """
+        Backward path
+
+        :param gradient: gradient of the loss function that should be backpropageted threw the network layers
+        :param learning_rate: a number between 0 and 1 to smooth the learning process
+        :return: gradient of the backward path
+        """
+        grad = gradient
+        for module in reversed(self.modules):
+            grad = module.backward(grad, learning_rate)
+
+        return grad
     
     def eval(self):
         self.__eval__ = True
@@ -37,13 +59,6 @@ class NeuralNetwork(Module):
         self.__eval__ = False
         for module in self.modules:
             module.train()
-    
-    def backward(self, gradient, learning_rate):
-        grad = gradient
-        for module in reversed(self.modules):
-            grad = module.backward(grad, learning_rate)
-
-        return grad
     
     def save(self, filename):
         with open(filename, 'wb') as f:
